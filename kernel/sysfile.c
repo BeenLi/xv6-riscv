@@ -434,6 +434,7 @@ sys_chdir(void)
 uint64
 sys_exec(void)
 {
+  // 2022/10/9 @wanli 将init程序装载进入内核(kalloc)
   char path[MAXPATH], *argv[MAXARG];
   int i;
   uint64 uargv, uarg;

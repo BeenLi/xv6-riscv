@@ -43,7 +43,7 @@ usertrap(void)
 
   // send interrupts and exceptions to kerneltrap(),
   // since we're now in the kernel.
-  w_stvec((uint64)kernelvec);
+  w_stvec((uint64)kernelvec);  // 设置stvec?
 
   struct proc *p = myproc();
   
@@ -62,7 +62,7 @@ usertrap(void)
 
     // an interrupt will change sepc, scause, and sstatus,
     // so enable only now that we're done with those registers.
-    intr_on();
+    intr_on(); // enable interrupt
 
     syscall();
   } else if((which_dev = devintr()) != 0){
