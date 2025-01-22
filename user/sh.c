@@ -147,7 +147,7 @@ main(void)
 {
   static char buf[100];
   int fd;
-
+  printf("sh is runing (pid=%d)\n", getpid());
   // Ensure that three file descriptors are open.
   while((fd = open("console", O_RDWR)) >= 0){
     if(fd >= 3){
@@ -165,6 +165,10 @@ main(void)
         fprintf(2, "cannot cd %s\n", buf+3);
       continue;
     }
+    // sh先fork一个子程序, 自己进入wait()
+    // fork的子程序通过exec来执行用户命令
+    // 当用户程序结束后，这个fork的子程序也可以退出了
+    // 那么sh父程序wait(0)被激活
     if(fork1() == 0)
       runcmd(parsecmd(buf));
     wait(0);
