@@ -89,3 +89,16 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+// added by wl 2025/01/24:
+uint64 sys_trace(void)
+{
+  int sysTraceMask;
+  argint(0, &sysTraceMask);
+  myproc()->systemCallTraceMask = sysTraceMask;
+  printf(
+      "pid:%d --> systemCallTraceMask:%d\n", myproc()->pid,
+      myproc()->systemCallTraceMask);
+  return 0;
+}
+// end

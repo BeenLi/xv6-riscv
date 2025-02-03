@@ -5,7 +5,9 @@
         "*.sm": "cpp",
         "*.tracer": "makefile",
         "*.llvm": "llvm",
-        "fcntl.h": "c"
+        "fcntl.h": "c",
+        "types.h": "c",
+        "param.h": "c"
     },
     "editor.tabSize": 2
 }

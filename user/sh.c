@@ -76,6 +76,11 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       exit(1);
+    // 2025.1.24 在 xv6 的这套接口里，如果 exec()
+    // 调用成功，它会用新程序的代码和数据替换当前进程的映像，
+    // 随后不会再返回到原先的用户态代码；
+    // 换句话说，在成功的情况下，调用进程的地址空间被新程序覆盖，后续的
+    // C 代码行（包括第 80 行）再也不会执行。
     exec(ecmd->argv[0], ecmd->argv);
     fprintf(2, "exec %s failed\n", ecmd->argv[0]);
     break;

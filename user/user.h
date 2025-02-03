@@ -22,6 +22,9 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+// added by wl 2025/01/24: 
+int trace(int);
+// end
 
 // ulib.c
 int stat(const char*, struct stat*);

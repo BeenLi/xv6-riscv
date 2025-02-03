@@ -104,4 +104,10 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
+  // added by wl 2025/01/24: 
+  // this is used to finish the experiment of "system call tracing" in
+  // lab1:System Call 
+  int systemCallTraceMask;
+  // end
 };

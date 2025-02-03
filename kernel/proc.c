@@ -146,6 +146,7 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  p->systemCallTraceMask = 0; // lab2
   return p;
 }
 
@@ -309,6 +310,10 @@ fork(void)
   np->cwd = idup(p->cwd);
 
   safestrcpy(np->name, p->name, sizeof(p->name));
+  // added by wl 2025/01/24:
+  // sys_trace system call need inherit the traceCallMask from its parent
+  np->systemCallTraceMask = p->systemCallTraceMask;
+  // end
 
   pid = np->pid;
 

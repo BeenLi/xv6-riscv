@@ -89,10 +89,37 @@ tags: $(OBJS) _init
 
 ULIB = $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
 
+### tips by wanli @2025_1_24
+### _%表示匹配所有的_xx目标,比如$U/_cat
+### 其中%.o中的%跟_%匹配到的%是一样的,比如cat
+### $@是所有的目标的alias
+### $^是所有的依赖的alias
+### $*：在模式规则（pattern rule）中，代表与 % 通配符匹配的那部分“词干”。
+### 匹配项一个个进行:比如
+### riscv64-linux-gnu-ld -z max-page-size=4096 -T user/user.ld -o user/_pingpong user/pingpong.o user/ulib.o user/usys.o user/printf.o user/umalloc.o
+### riscv64-linux-gnu-objdump -S user/_pingpong > user/pingpong.asm
+### riscv64-linux-gnu-objdump -t user/_pingpong | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$/d' > user/pingpong.sy
+
+### 链接的时候才会去查看函数的实际实现比如各个sysCall,printf库函数等-->这个实现在了ULIB里
+### end
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -T $U/user.ld -o $@ $^
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
+
+### 这个是Makefile的默认规格
+### 编译依赖顺序:fs.img -> UPROGS -> %.o -> %.c
+### 大概长这样:
+### riscv64-linux-gnu-gcc -Wall -Werror -O 
+### -fno-omit-frame-pointer -ggdb -gdwarf-2 -MD 
+### -mcmodel=medany -ffreestanding -fno-common 
+### -nostdlib -mno-relax -I. -fno-stack-protector -fno-pie -no-pie   
+### -c -o user/pingpong.o user/pingpong.c
+
+### $< 只代表 第一个依赖文件。常见于隐式规则（如 .c -> .o 的编译规则）。
+### $@：代表当前规则的 目标文件（target）
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $U/usys.S : $U/usys.pl
 	perl $U/usys.pl > $U/usys.S
@@ -133,7 +160,8 @@ UPROGS=\
 	$U/_wc\
 	$U/_zombie\
 	$U/_sleep\
-	$U/_pingpong
+	$U/_pingpong \
+	$U/_trace
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
@@ -155,7 +183,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 	then echo "-gdb tcp::$(GDBPORT)"; \
 	else echo "-s -p $(GDBPORT)"; fi)
 ifndef CPUS
-CPUS := 3
+CPUS := 1
 endif
 
 QEMUOPTS = -machine virt -bios none -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
