@@ -62,6 +62,7 @@ void
 kvminithart()
 {
   // wait for any previous writes to the page table memory to finish.
+  // fflush the TLB(指令提供了参数来控制哪些地址对应的TLB表项，默认是全部冲刷)
   sfence_vma();
 
   w_satp(MAKE_SATP(kernel_pagetable));
@@ -90,6 +91,7 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
 
   for(int level = 2; level > 0; level--) {
     pte_t *pte = &pagetable[PX(level, va)];
+    // PTE_V说明这个表项存储的va指向的页真的在内存中,
     if(*pte & PTE_V) {
       pagetable = (pagetable_t)PTE2PA(*pte);
     } else {
@@ -155,6 +157,7 @@ mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
       return -1;
     if(*pte & PTE_V)
       panic("mappages: remap");
+    // 一定得保证pa所指向的物理页是存在的;
     *pte = PA2PTE(pa) | perm | PTE_V;
     if(a == last)
       break;
@@ -222,6 +225,7 @@ uvmfirst(pagetable_t pagetable, uchar *src, uint sz)
 
 // Allocate PTEs and physical memory to grow process from oldsz to
 // newsz, which need not be page aligned.  Returns new size or 0 on error.
+// sz 其实是address;看下面的mappages(xx,xx,xx)第二个参数就是va，但是传入的是sz;
 uint64
 uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz, int xperm)
 {
@@ -280,7 +284,9 @@ freewalk(pagetable_t pagetable)
       freewalk((pagetable_t)child);
       pagetable[i] = 0;
     } else if(pte & PTE_V){
-      panic("freewalk: leaf");
+      // only leaf pte will have the property of PTE_R|PTE_W|PTE_X
+      printf("pte:%p\n", pte);
+      panic("freewalk: found that one leaf pte has not been unmapped");
     }
   }
   kfree((void*)pagetable);

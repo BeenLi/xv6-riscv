@@ -110,4 +110,9 @@ struct proc {
   // lab1:System Call 
   int systemCallTraceMask;
   // end
+
+  // added by wl 2025/02/14: 
+  // used in lab3:Page tables:Speed up system calls
+  struct usyscall *usyscall; // read-only page for system call;
+  // end
 };

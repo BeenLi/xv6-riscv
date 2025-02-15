@@ -1,5 +1,24 @@
-- [x] exp1(utility)
+- [x] exp1(Xv6 and Unix utilities)
     - [x] sleep
     - [x] pingpong
-- [ ] exp2(systemCall)
-- [ ] exp3( )
+    - [ ] primes
+    - [ ] find
+    - [ ] xargs
+- [ ] exp2(system calls)
+    - [x] system call tracing
+    - [ ] sysinfo
+- [ ] exp3(page tables)
+    - [x] Speed up system calls
+    - [ ] print a page table
+    - [ ] detecting which page have been accessed
+- [ ] exp4(Traps)
+    - [ ] RISC-V aseembly
+    - [ ] Backtrace
+    - [ ] Alarm
+- [ ] exp5(Copy on-write)
+    - [ ]
+- [ ] exp6(Multithreading)
+- [ ] exp7(network driver)
+- [ ] exp8(Lock)
+- [ ] exp9(File System)
+- [ ] exp10(mmap)

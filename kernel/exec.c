@@ -50,6 +50,7 @@ exec(char *path, char **argv)
     goto bad;
 
   // Load program into memory.
+  // 读ph.num个 program section header
   for(i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)){
     if(readi(ip, 0, (uint64)&ph, off, sizeof(ph)) != sizeof(ph))
       goto bad;
@@ -62,9 +63,14 @@ exec(char *path, char **argv)
     if(ph.vaddr % PGSIZE != 0)
       goto bad;
     uint64 sz1;
+    // ph.vaddr 都是页对齐，且都是从零开始的，然后依此递增;
+    // i=1, ph.vaddr:0, ph.memsz=4096
+    // i=2, ph.vaddr:4096, ph.memsz=32
+    printf("i=%d, ph.vaddr:%d, ph.memsz=%d\n", i, ph.vaddr, ph.memsz);
     if((sz1 = uvmalloc(pagetable, sz, ph.vaddr + ph.memsz, flags2perm(ph.flags))) == 0)
       goto bad;
     sz = sz1;
+    // 将program segment写入到上面分配好的页中(ph.memsz > ph.filezs);
     if(loadseg(pagetable, ph.vaddr, ip, ph.off, ph.filesz) < 0)
       goto bad;
   }
@@ -83,9 +89,11 @@ exec(char *path, char **argv)
   if((sz1 = uvmalloc(pagetable, sz, sz + 2*PGSIZE, PTE_W)) == 0)
     goto bad;
   sz = sz1;
+  // 把第一个页设置为不可访问, stack guard;(可以对应Figure3.4来看)
+  // TODO:并没有释放这个物理页，会导致空间的浪费;
   uvmclear(pagetable, sz-2*PGSIZE);
   sp = sz;
-  stackbase = sp - PGSIZE;
+  stackbase = sp - PGSIZE;  // program stack base address;
 
   // Push argument strings, prepare rest of stack in ustack.
   for(argc = 0; argv[argc]; argc++) {
@@ -95,6 +103,7 @@ exec(char *path, char **argv)
     sp -= sp % 16; // riscv sp must be 16-byte aligned
     if(sp < stackbase)
       goto bad;
+    // 把程序命令行参数写入到用户的栈中(copy kernel memory to user space)
     if(copyout(pagetable, sp, argv[argc], strlen(argv[argc]) + 1) < 0)
       goto bad;
     ustack[argc] = sp;

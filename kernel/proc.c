@@ -132,6 +132,19 @@ found:
     return 0;
   }
 
+  // added by wl 2025/02/14:
+  // allocate a read-only page that stores some data that are available in
+  // kernel space before
+  // 创建一个只读页存储一些原本需要系统调用在kernel中才能得到的数据
+  if ((p->usyscall = (struct usyscall*)kalloc()) == 0) {
+    freeproc(p);
+    release(&p->lock);
+    return 0;
+  }
+  // set the pid in the read-only page
+  p->usyscall->pid = p->pid;
+  printf("allocproc: set its pid(p->usyscall->pid)=%d\n", p->usyscall->pid);
+  // end
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
@@ -159,6 +172,7 @@ freeproc(struct proc *p)
   if(p->trapframe)
     kfree((void*)p->trapframe);
   p->trapframe = 0;
+  if (p->usyscall) kfree((void*)p->usyscall);
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   p->pagetable = 0;
@@ -203,6 +217,19 @@ proc_pagetable(struct proc *p)
     return 0;
   }
 
+  // added by wl 2025/02/14:
+  // map the Usyscall read-only page below the trapframe page (PTE_U);
+  // and need give the priviledge of acessing this page for user (PTE_R);
+  if (mappages(
+          pagetable, USYSCALL, PGSIZE, (uint64)(p->usyscall), PTE_R | PTE_U)
+      < 0) {
+    // 把前面两个映射成功的页都取消映射
+    uvmunmap(pagetable, TRAPFRAME, 2, 0);
+    // 同时把所有分配的物理页都free掉;
+    uvmfree(pagetable, 0);
+  }
+  // end
+
   return pagetable;
 }
 
@@ -213,6 +240,7 @@ proc_freepagetable(pagetable_t pagetable, uint64 sz)
 {
   uvmunmap(pagetable, TRAMPOLINE, 1, 0);
   uvmunmap(pagetable, TRAPFRAME, 1, 0);
+  uvmunmap(pagetable, USYSCALL, 1, 0);
   uvmfree(pagetable, sz);
 }
 

@@ -49,6 +49,7 @@
 
 // map the trampoline page to the highest address,
 // in both user and kernel space.
+// 0xF000 ~ 0xFFFF 假设MAXVA=0x10000 (Sv16)
 #define TRAMPOLINE (MAXVA - PGSIZE)
 
 // map kernel stacks beneath the trampoline,
@@ -65,3 +66,14 @@
 //   TRAPFRAME (p->trapframe, used by the trampoline)
 //   TRAMPOLINE (the same page as in the kernel)
 #define TRAPFRAME (TRAMPOLINE - PGSIZE)
+
+
+// added by wl 2025/02/14: 每个用户进程地址空间最上面两个页是固定的,
+// 然后从零开始是text,data,stack,heap;
+// 因此可以分配一个固定的页在trapframe和trampoline下面
+#define USYSCALL (TRAPFRAME - PGSIZE)
+struct usyscall
+{
+  int pid;
+};
+// end

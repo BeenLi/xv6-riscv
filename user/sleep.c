@@ -1,5 +1,7 @@
 #include "kernel/types.h"
 #include "user.h"
+#include "kernel/memlayout.h"
+#include "kernel/riscv.h"
 
 int parse_int(const char* arg) {
     const char* p = arg;
@@ -71,5 +73,11 @@ int main(int argc,char** argv) {
         printf("fork error\n");
     }
     */
+
+   // added by wl 2025/02/14: test for lab3 page tables(speedup system calls)
+   struct usyscall* _usyscall = (struct usyscall*) USYSCALL; 
+   printf("[from usyscall read-only page]mypid = %d\n", _usyscall->pid);
+   printf("[from system call]mypid = %d\n", getpid());
+   // end
     exit(0);
 }

@@ -24,8 +24,8 @@
             "logging": {
                 "engineLogging": true,
                 "programOutput": true,
-            }
-            // "preLaunchTask": "Open Terminal"
+            },
+            // "preLaunchTask": "start-qemu"  // 需要创建 start-qemu 的任务来启动 QEMU
         }
     ]
 }
