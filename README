@@ -13,7 +13,7 @@
     - [ ] detecting which page have been accessed
 - [ ] exp4(Traps)
     - [ ] RISC-V aseembly
-    - [ ] Backtrace
+    - [x] Backtrace
     - [ ] Alarm
 - [ ] exp5(Copy on-write)
     - [ ]

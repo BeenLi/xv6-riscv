@@ -318,6 +318,15 @@ r_ra()
   asm volatile("mv %0, ra" : "=r" (x) );
   return x;
 }
+// added by wl 2025/02/25:  lab4 trap:backtrace
+static inline uint64
+r_fp()
+{
+  uint64 x;
+  asm volatile("mv %0, s0" : "=r" (x) );
+  return x;
+}
+// end
 
 // flush the TLB.
 static inline void

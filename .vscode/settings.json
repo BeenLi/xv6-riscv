@@ -7,7 +7,11 @@
         "*.llvm": "llvm",
         "fcntl.h": "c",
         "types.h": "c",
-        "param.h": "c"
+        "param.h": "c",
+        "memlayout.h": "c",
+        "proc.h": "c",
+        "defs.h": "c",
+        "riscv.h": "c"
     },
     "editor.tabSize": 2
 }

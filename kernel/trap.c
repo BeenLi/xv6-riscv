@@ -43,11 +43,16 @@ usertrap(void)
 
   // send interrupts and exceptions to kerneltrap(),
   // since we're now in the kernel.
-  w_stvec((uint64)kernelvec);  // 设置stvec?
+  // 由于在处理用户trap的过程中，当前处于supervisor mode
+  // supervisor mode有自己的trap handler;
+  w_stvec((uint64)kernelvec);
 
   struct proc *p = myproc();
-  
+
   // save user program counter.
+  // usertrap()可能后续调用了yield() 切换到另一个进程的kernel thread
+  // 当另一个进程的kernel thread返回到user
+  // thread会使用自己trapframe->epc来覆盖该CPU的epc csr;
   p->trapframe->epc = r_sepc();
   
   if(r_scause() == 8){
